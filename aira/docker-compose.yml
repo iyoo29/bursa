@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  aira-server:
+    build: ./server
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - DATABASE_URL=sqlite:///./aira.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
