@@ -223,3 +223,104 @@ p {
   font-weight: 500;
   color: var(--accent-cyan);
 }
+
+/* AI Planner & Workflow Integrasi */
+.ai-textarea {
+  width: 100%;
+  min-height: 80px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.ai-textarea:focus {
+  border-color: var(--accent-blue);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-info {
+  background: rgba(58, 134, 255, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid rgba(58, 134, 255, 0.3);
+}
+
+.badge-warning {
+  background: rgba(255, 196, 0, 0.15);
+  color: var(--accent-yellow);
+  border: 1px solid rgba(255, 196, 0, 0.3);
+}
+
+.badge-success {
+  background: rgba(0, 230, 118, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+}
+
+.badge-danger,
+.badge-error {
+  background: rgba(255, 42, 42, 0.15);
+  color: var(--accent-red);
+  border: 1px solid rgba(255, 42, 42, 0.3);
+}
+
+.step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.step-number {
+  background: var(--accent-blue);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-action-name {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.step-params {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  word-break: break-all;
+}
+

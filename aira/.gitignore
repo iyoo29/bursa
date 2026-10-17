@@ -71,6 +71,9 @@ npm-debug.log*
 *.key
 .env.local
 .env.production
+firmware/**/credentials.h
+firmware/**/secrets.h
 
 # Build artifacts
 *.firmware.bin
+

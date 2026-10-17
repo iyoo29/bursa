@@ -1,7 +1,7 @@
 # AIRA Project Status
 
 ## Current Phase
-Penyelesaian V1 - Sistem Utuh (Semua Komponen Dasar Selesai)
+Fase Hardware V1 — Layar LCD, LED RGB, USB Composite (CDC Serial + HID), dan Emergency Stop BERHASIL diverifikasi di perangkat nyata (LILYGO T-Dongle-S3).
 
 ## Completed
 - [x] Environment inspection
@@ -19,20 +19,20 @@ Penyelesaian V1 - Sistem Utuh (Semua Komponen Dasar Selesai)
 - [x] Server dependensi dan WebSocket handler diimplementasikan
 - [x] Inisialisasi React Web Dashboard (Phase 4)
 - [x] Desain UI Glassmorphism & Logic REST API Dashboard
+- [x] **[HARDWARE] Layar LCD ST7735 0.96" menyala normal (Backlight Pin 38 Active LOW telah diperbaiki)**
+- [x] **[HARDWARE] USB Composite Mode stabil (ARDUINO_USB_MODE=0 TinyUSB OTG CDC + HID tidak hilang/disconnect lagi)**
+- [x] **[HARDWARE] Dashboard Status AIRA tampil jernih di LCD (WiFi, WS, Agen)**
+- [x] **[HARDWARE] Tombol & Emergency Stop berfungsi (Layar merah Berhenti Darurat & LED merah berkedip cepat)**
+- [x] **[HARDWARE] LED APA102 berfungsi sempurna (Booting biru, Idle kuning berkedip saat mencari Wi-Fi, Emergency merah)**
+- [x] **[TAHAP 03] Host Helper Windows (Python) & Web Companion (Browser getDisplayMedia) berhasil dibuat dan lulus 11 tes simulasi.**
+- [x] **[TAHAP 04] Audit & Pengujian Komunikasi End-to-End lulus 18 pengujian (REST, WS, Allowlist, Timeout, Disconnect, TTL).**
+- [x] **[TAHAP 05] Integrasi AI Cloud (Mock Provider default, Double Validation, Observe Gate, 26/26 pengujian lulus).**
+- [x] **[TAHAP 06] Integrasi UI Terpadu & Pengujian Alur Kerja (React Dashboard, AI Planner card, konfirmasi persetujuan pengguna, verifikasi eksekusi hardware aktual, 31/31 pengujian lulus).**
 
-## In Progress
-- [ ] Menunggu pengguna untuk mencoba simulasi Dashboard -> Server
-
-## Next
-- [ ] PHASE 2 — T-Dongle Firmware (LCD, LED, Button)
-- [ ] PHASE 3 — USB HID implementation
-- [ ] PHASE 4 — Wi-Fi connectivity
-- [ ] PHASE 5 — WebSocket communication
-- [ ] PHASE 6 — Windows Host Helper
-- [ ] PHASE 7 — AIRA Server
-- [ ] PHASE 8 — AI Agent integration
-- [ ] PHASE 9 — Web Interface
-- [ ] PHASE 10 — Integration testing
+## In Progress / Tahap Berikutnya
+- [ ] Pengujian fisik dongle LILYGO T-Dongle-S3 pada port USB aktual (menunggu konfirmasi koneksi hardware fisik dari pengguna).
+- [ ] Flash firmware hasil build ke perangkat fisik setelah port teridentifikasi.
+- [ ] Verifikasi visual langsung pada layar ST7735 dan pengetikan USB HID fisik.
 
 ## Errors
 - SSL certificate issue with pip (workaround: --trusted-host flags)

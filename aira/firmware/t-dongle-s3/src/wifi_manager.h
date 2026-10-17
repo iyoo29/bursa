@@ -85,7 +85,7 @@ private:
 
     void _loadCredentials();
     void _saveCredentials();
-    static void _wifiEventHandler(WiFiEvent_t event);
+    static void _wifiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info);
 };
 
 #endif // AIRA_WIFI_MANAGER_H

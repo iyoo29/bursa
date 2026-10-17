@@ -3,10 +3,11 @@
  */
 
 #include "wifi_manager.h"
+#include <esp_wifi.h>
 
 void WiFiManager::init() {
     WiFi.mode(WIFI_STA);
-    WiFi.setAutoReconnect(false);  // Kita menangani koneksi ulang sendiri
+    WiFi.setAutoReconnect(true);  // Aktifkan auto-reconnect bawaan stack WiFi ESP32
     WiFi.onEvent(_wifiEventHandler);
 
     _loadCredentials();
@@ -129,37 +130,64 @@ String WiFiManager::scanNetworks() {
     return result;
 }
 
-extern void diagCheckpoint(int step, const char* name);
-
 void WiFiManager::_loadCredentials() {
-    diagCheckpoint(5, "NVS_LOAD_IN");
     _prefs.begin("aira-wifi", true);  // read-only (hanya baca)
     _ssid = _prefs.getString("ssid", "");
     _password = _prefs.getString("pass", "");
     _prefs.end();
-    diagCheckpoint(6, "NVS_LOAD_OUT");
 }
 
 void WiFiManager::_saveCredentials() {
-    diagCheckpoint(9, "NVS_SAVE_IN");
     _prefs.begin("aira-wifi", false);  // read-write (baca-tulis)
     _prefs.putString("ssid", _ssid);
     _prefs.putString("pass", _password);
     _prefs.end();
-    diagCheckpoint(10, "NVS_SAVE_OUT");
 }
 
-void WiFiManager::_wifiEventHandler(WiFiEvent_t event) {
+void WiFiManager::_wifiEventHandler(WiFiEvent_t event, WiFiEventInfo_t info) {
+    unsigned long timestamp = millis();
     switch (event) {
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-            Serial.printf("[WiFi] Event: Mendapat IP - %s\n", WiFi.localIP().toString().c_str());
-            break;
-        case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
-            Serial.println("[WiFi] Event: Terputus dari jaringan");
+            Serial.printf("[%lu ms] [WiFi] Event: Mendapat IP - %s\n", timestamp, WiFi.localIP().toString().c_str());
             break;
         case ARDUINO_EVENT_WIFI_STA_CONNECTED:
-            Serial.println("[WiFi] Event: Terhubung ke AP (Access Point)");
+            Serial.printf("[%lu ms] [WiFi] Event: Terhubung ke AP (Access Point)\n", timestamp);
             break;
+        case ARDUINO_EVENT_WIFI_STA_DISCONNECTED: {
+            uint8_t reason = info.wifi_sta_disconnected.reason;
+            const char* reasonStr = "Tidak Diketahui";
+            switch (reason) {
+                case WIFI_REASON_NO_AP_FOUND: 
+                    reasonStr = "AP/SSID Tidak Ditemukan"; 
+                    break;
+                case WIFI_REASON_AUTH_FAIL:
+                case WIFI_REASON_AUTH_EXPIRE: 
+                    reasonStr = "Autentikasi Gagal / Kata Sandi Tidak Cocok"; 
+                    break;
+                case WIFI_REASON_HANDSHAKE_TIMEOUT:
+                case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT: 
+                    reasonStr = "Handshake Timeout"; 
+                    break;
+                case WIFI_REASON_ASSOC_FAIL:
+                case WIFI_REASON_ASSOC_EXPIRE: 
+                    reasonStr = "Asosiasi ke AP Gagal"; 
+                    break;
+                case WIFI_REASON_BEACON_TIMEOUT: 
+                    reasonStr = "Kehilangan Beacon / Sinyal Hilang"; 
+                    break;
+                case WIFI_REASON_CONNECTION_FAIL: 
+                    reasonStr = "Koneksi Gagal Terbentuk"; 
+                    break;
+                case WIFI_REASON_CIPHER_SUITE_REJECTED: 
+                    reasonStr = "Cipher Suite Ditolak oleh AP"; 
+                    break;
+                default: 
+                    break;
+            }
+            Serial.printf("[%lu ms] [WiFi] Event: Terputus dari jaringan | Alasan: %s (Kode: %d)\n", 
+                          timestamp, reasonStr, reason);
+            break;
+        }
         default:
             break;
     }

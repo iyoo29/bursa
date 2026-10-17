@@ -12,8 +12,22 @@ void WebSocketManager::init() {
     Serial.println("[WebSocket] Diinisialisasi");
 }
 
+void WebSocketManager::setApiKey(const String& apiKey) {
+    _apiKey = apiKey;
+    if (_apiKey.length() > 0) {
+        String header = "x-bursa-key: " + _apiKey + "\r\n";
+        _ws.setExtraHeaders(header.c_str());
+    } else {
+        _ws.setExtraHeaders(nullptr);
+    }
+}
+
 void WebSocketManager::connect(const String& host, uint16_t port, const String& path) {
     Serial.printf("[WebSocket] Menghubungkan ke %s:%d%s\n", host.c_str(), port, path.c_str());
+    if (_apiKey.length() > 0) {
+        String header = "x-bursa-key: " + _apiKey + "\r\n";
+        _ws.setExtraHeaders(header.c_str());
+    }
     _ws.begin(host, port, path);
     _ws.onEvent(_staticWebSocketEvent);
     

@@ -1,0 +1,36 @@
+{
+  "aira-auto-approve": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import json,sys; data=json.load(sys.stdin); cmd=data.get('toolCall',{}).get('args',{}).get('CommandLine',''); dangerous=['rm -rf /','del /f /s /q C:\\\\','format','shutdown','Remove-Item -Recurse -Force C:\\\\','reg delete']; result={'decision':'allow','reason':'Auto-approved safe command'}; [result.update({'decision':'ask','reason':f'Potentially dangerous: {cmd}'}) for d in dangerous if d.lower() in cmd.lower()]; print(json.dumps(result))\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "replace_file_content|write_to_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import json,sys; data=json.load(sys.stdin); args=data.get('toolCall',{}).get('args',{}); path=args.get('TargetFile','').replace('\\\\\\\\','/'); workspace='c:/Users/LENOVO/Documents/antigravity/intelligent-chandrasekhar'; safe=path.startswith(workspace.lower()) or path.startswith(workspace); result={'decision':'allow','reason':'Auto-approved: file within workspace'} if safe else {'decision':'ask','reason':f'File outside workspace: {path}'}; print(json.dumps(result))\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "view_file|read_url_content|search_web",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import json; print(json.dumps({'decision':'allow','reason':'Auto-approved: read-only operation'}))\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -33,6 +33,12 @@ public:
     void connect(const String& host, uint16_t port, const String& path = "/ws/device");
 
     /**
+     * Mengatur kunci API untuk autentikasi handshake WebSocket (x-bursa-key).
+     * @param apiKey Kunci akses API server
+     */
+    void setApiKey(const String& apiKey);
+
+    /**
      * Memutuskan koneksi WebSocket.
      */
     void disconnect();
@@ -71,6 +77,7 @@ public:
 
 private:
     WebSocketsClient _ws;
+    String _apiKey = "";
     bool _connected = false;
     unsigned long _lastHeartbeat = 0;
     

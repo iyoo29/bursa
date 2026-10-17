@@ -26,9 +26,31 @@ USBHIDManager usbHID;
 WebSocketManager wsManager;
 CommandParser commandParser;
 
+// Konfigurasi Kredensial & Jaringan Lokal
+#if __has_include("credentials.h")
+#include "credentials.h"
+#endif
+
+#ifndef DEFAULT_WIFI_SSID
+#define DEFAULT_WIFI_SSID       ""
+#endif
+#ifndef DEFAULT_WIFI_PASSWORD
+#define DEFAULT_WIFI_PASSWORD   ""
+#endif
+#ifndef DEFAULT_SERVER_HOST
+#define DEFAULT_SERVER_HOST     "127.0.0.1"
+#endif
+#ifndef DEFAULT_SERVER_PORT
+#define DEFAULT_SERVER_PORT     8000
+#endif
+#ifndef DEFAULT_SERVER_API_KEY
+#define DEFAULT_SERVER_API_KEY  ""
+#endif
+
 // Variabel status global
 AiraStatus currentStatus = STATUS_BOOTING;
 String agentStatusText = "Menunggu...";
+static bool wsInitiated = false;
 
 // Update tampilan LCD
 void updateDisplay() {
@@ -89,15 +111,8 @@ void onButtonLongPress() {
     wsManager.disconnect();
 }
 
-// Fungsi checkpoint diagnostik visual (LCD + Serial)
-void diagCheckpoint(int step, const char* name) {
-    Serial.printf("[DIAG] Step %02d: %s\n", step, name);
-    displayManager.showDiagnostic(step, name);
-    delay(50); // Jeda minimal 50ms agar tampilan visual stabil
-}
-
 void setup() {
-    // Inisialisasi LED dan Layar paling awal untuk mencegah stuck di USB CDC
+    // Inisialisasi LED dan Layar paling awal
     ledManager.init();
     ledManager.setStatus(STATUS_BOOTING);
     
@@ -112,9 +127,7 @@ void setup() {
     Serial.println("  AIRA Firmware v" AIRA_FW_VERSION " Memulai...  ");
     Serial.println("========================================\n");
 
-    delay(1000); // Pertahankan splash sejenak sebelum checkpoint dimulai
-
-    diagCheckpoint(1, "BOOT_START");
+    delay(1500); // Tampilkan splash screen sejenak
 
     DeviceID::init();
     
@@ -122,44 +135,34 @@ void setup() {
     buttonHandler.onShortPress(onButtonShortPress);
     buttonHandler.onLongPress(onButtonLongPress);
     
-    diagCheckpoint(2, "HID_INIT_IN");
     usbHID.init();
-    diagCheckpoint(3, "HID_INIT_OUT");
     
-    diagCheckpoint(4, "WIFI_INIT_IN");
     wifiManager.init();
-    diagCheckpoint(7, "WIFI_INIT_OUT");
-    
-    diagCheckpoint(8, "WIFI_CRED_IN");
-    wifiManager.setCredentials("Iyo", "Riobm123");
-    diagCheckpoint(11, "WIFI_CRED_OUT");
+    if (strlen(DEFAULT_WIFI_SSID) > 0) {
+        wifiManager.setCredentials(DEFAULT_WIFI_SSID, DEFAULT_WIFI_PASSWORD);
+    }
 
-    diagCheckpoint(12, "WS_INIT_IN");
     wsManager.init();
-    diagCheckpoint(13, "WS_INIT_OUT");
-
+    if (strlen(DEFAULT_SERVER_API_KEY) > 0) {
+        wsManager.setApiKey(DEFAULT_SERVER_API_KEY);
+    }
     wsManager.onConnectionChange(onWsConnectionChange);
     wsManager.onMessage(onWsMessage);
     
-    diagCheckpoint(14, "CMD_PARSER_IN");
     commandParser.init(&usbHID, &displayManager, &wsManager);
-    diagCheckpoint(15, "CMD_PARSER_OUT");
     
-    diagCheckpoint(16, "DELAY_2S_IN");
-    delay(2000);
-    diagCheckpoint(17, "DELAY_2S_OUT");
-    
-    // Persiapan sebelum masuk loop utama
+    // Tampilkan dashboard status awal (menghubungkan WiFi)
     currentStatus = STATUS_WIFI_CONNECTING;
-    diagCheckpoint(18, "LED_STATUS_IN");
     ledManager.setStatus(currentStatus);
-    diagCheckpoint(19, "LED_STATUS_OUT");
-
-    diagCheckpoint(20, "DISP_UPDATE_IN");
     updateDisplay();
-    diagCheckpoint(21, "DISP_UPDATE_OUT");
 
-    diagCheckpoint(22, "SETUP_DONE");
+    // Hubungkan ke WiFi
+    Serial.println("[Utama] Menghubungkan ke Wi-Fi...");
+    if (wifiManager.connect()) {
+        currentStatus = STATUS_WIFI_CONNECTED;
+        ledManager.setStatus(currentStatus);
+        updateDisplay();
+    }
 }
 
 void loop() {
@@ -175,21 +178,25 @@ void loop() {
 
     // Mengelola logika status koneksi Wi-Fi dan WebSocket
     if (wifiManager.isConnected()) {
-        if (!wsManager.isConnected()) {
-            // Coba sambungkan WebSocket
-            wsManager.connect("172.20.10.2", 8000);
-            wsManager.loop(); // loop akan mencoba mengkoneksikan ulang berdasarkan config wsManager
-        } else {
-            wsManager.loop();
+        if (!wsInitiated) {
+            Serial.printf("[Utama] Wi-Fi terhubung. Memulai koneksi WebSocket ke %s:%d...\n", DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT);
+            wsManager.connect(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT);
+            wsInitiated = true;
         }
+        wsManager.loop();
         
-        // Memperbarui status global
+        // Memperbarui status global jika sebelumnya connecting
         if (currentStatus == STATUS_WIFI_CONNECTING) {
             currentStatus = STATUS_WIFI_CONNECTED;
             ledManager.setStatus(currentStatus);
             updateDisplay();
         }
     } else {
+        if (wsInitiated) {
+            Serial.println("[Utama] Wi-Fi terputus. Menutup koneksi WebSocket...");
+            wsManager.disconnect();
+            wsInitiated = false;
+        }
         if (currentStatus != STATUS_WIFI_CONNECTING) {
             currentStatus = STATUS_WIFI_CONNECTING;
             ledManager.setStatus(currentStatus);
@@ -197,3 +204,4 @@ void loop() {
         }
     }
 }
+
